@@ -228,7 +228,7 @@ main.drawer-panel #fab{opacity:0;visibility:hidden}
       <button class="btn chip" id="tgLib" data-en="◧ Library">◧ 家具库</button>
       <button class="btn chip" id="tgPanel" data-en="Properties ◨">属性 ◨</button>
     </div>
-    <div class="brand"><b data-en="3BR 2LR 2BA · Interior Design">三室两厅两卫 · 装修设计</b><span id="subtitle">原始户型 1:60 · 尺寸单位 mm</span></div>
+    <div class="brand"><b data-en="Sclifos 20 · Ground floor">三室两厅两卫 · 装修设计</b><span id="subtitle">原始户型 1:60 · 尺寸单位 mm</span></div>
     <div class="grp seg" id="viewSeg" title="切换 2D / 3D (T)" data-en-title="Switch 2D / 3D (T)">
       <span class="pill"></span>
       <button class="btn" data-view="2d" data-en="2D Plan">2D 平面</button>
@@ -278,9 +278,8 @@ main.drawer-panel #fab{opacity:0;visibility:hidden}
     </div>
     <div class="grp only3d"><label class="range"><span data-en="Sun">日照</span> <input type="range" id="sun" min="7" max="18" step=".25" value="10" style="width:84px"><span id="sunT">10:00</span></label></div>
     <div class="spacer"></div>
-    <div class="grp" id="langSel" role="group" aria-label="Language / 语言">
-      <button class="btn chip" data-lang="zh" title="简体中文">简</button>
-      <button class="btn chip" data-lang="zht" title="繁體中文">繁</button>
+    <div class="grp" id="langSel" role="group" aria-label="Язык / Language">
+      <button class="btn chip" data-lang="ru" title="Русский">RU</button>
       <button class="btn chip" data-lang="en" title="English">EN</button>
     </div>
     <button class="btn" id="fullscreen" title="全屏 (Shift+F)" style="border:1px solid var(--line);background:#fff">⛶ 全屏</button>
@@ -344,14 +343,14 @@ main.drawer-panel #fab{opacity:0;visibility:hidden}
 
 <script>
 /* ======================= 多语言（中文 / English，默认中文） ======================= */
-const LANG_KEY = 'huxing-lang';
-const LANGS = ['zh', 'zht', 'en'];             // 简体 / 繁體（台湾用字）/ English
-let LANG = (() => { try { const l = localStorage.getItem(LANG_KEY); return LANGS.includes(l) ? l : 'zh'; } catch(e) { return 'zh'; } })();
+const LANG_KEY = 'sclifos-lang';
+const LANGS = ['ru', 'en'];
+let LANG = (() => { try { const l = localStorage.getItem(LANG_KEY); return LANGS.includes(l) ? l : 'ru'; } catch(e) { return 'ru'; } })();
 // 简 → 繁：先按词替换一字多义的字，再逐字查表（表由 OpenCC s2tw 按本页用到的字生成）
 const S2T_PHRASES = [['布置','佈置'],['布局','佈局'],['台面','檯面'],['复制','複製']];
 const S2T = new Map(('与與两兩个個为為书書于於仅僅从從价價会會传傳体體余餘侧側倾傾储儲儿兒关關内內写寫净淨准準击擊则則刚剛删刪制製办辦动動势勢区區单單占佔卧臥卫衛厅廳历歷压壓厨廚双雙发發变變叶葉后後吗嗎听聽启啟哑啞围圍图圖圆圓场場坐座块塊垫墊墙牆处處备備复復头頭妆妝婴嬰实實宽寬对對导導层層屉屜属屬岛島带帶干乾并並库庫应應开開当當径徑态態总總悬懸懒懶户戶护護拟擬择擇挂掛挡擋挤擠损損换換据據摆擺摇搖撑撐数數无無时時显顯暂暫机機杂雜杆桿条條来來松鬆构構柜櫃标標栈棧栏欄样樣梁樑棱稜椭橢横橫橱櫥气氣没沒注註浅淺测測浏瀏游遊滚滾满滿灯燈灵靈点點热熱状狀独獨环環现現电電画畫监監盖蓋盘盤砖磚确確离離积積称稱竖豎筑築签籤类類约約级級线線结結绕繞绘繪给給统統继繼绿綠缀綴编編缝縫缩縮网網联聯脚腳获獲虚虛装裝见見视視览覽触觸计計认認让讓议議记記设設识識译譯该該语語请請读讀调調负負败敗质質贴貼赶趕转轉轮輪软軟轴軸轻輕载載较較辅輔辑輯边邊过過这這进進远遠适適选選邻鄰里裡针針钢鋼钮鈕铰鉸铺鋪销銷锁鎖键鍵镜鏡长長门門闭閉闲閒间間阅閱阳陽阴陰阶階随隨隐隱静靜页頁顶頂项項顺順颜顏飘飄飞飛马馬鸟鳥齐齊龙龍').match(/../gu).map(p => [...p]));
 const s2t = s => S2T_PHRASES.reduce((a, [f, t]) => a.replaceAll(f, t), s).replace(/[\u3400-\u9fff]/g, c => S2T.get(c) || c);
-const tr = (zh, en) => LANG === 'en' ? en : LANG === 'zht' ? s2t(zh) : zh;
+const tr = (zh, en, ru) => LANG === 'ru' ? (ru ?? RU[zh] ?? en) : LANG === 'en' ? en : LANG === 'zht' ? s2t(zh) : zh;
 // 内置的房间 / 材料 / 家具名称存的是中文；英文界面下显示译名，用户自己改过的名称原样显示
 const NAMES_EN = {
   '主卧室':'Master Bedroom', '主卫浴':'Master Bath', '小孩房':"Kids' Room", '客卫浴':'Guest Bath', '洗衣阳台':'Laundry Balcony',
@@ -373,10 +372,12 @@ const NAMES_EN = {
   '蒸烤箱高柜':'Oven Tower', '烘干机':'Dryer', '空气净化器':'Air Purifier', '长书桌':'Long Desk', '办公椅':'Office Chair',
   '大书架':'Large Bookshelf', '立式钢琴':'Upright Piano', '跑步机':'Treadmill', '阅读椅':'Reading Chair', '茶桌':'Tea Table', '休闲椅':'Lounge Chair',
 };
-const nm = s => LANG === 'en' ? (NAMES_EN[s] ?? s) : LANG === 'zht' ? s2t(s) : s;
+const RU = {"户型装修设计": "Дом на Склифос, 20", "没有可撤销的操作": "Нечего отменять", "入户": "Вход", "拖动旋转（Shift 自由角度）": "Тяните, чтобы повернуть (Shift — любой угол)", "拖动调整尺寸": "Тяните, чтобы изменить размер", "房间面积": "Площади помещений", "点击查看 / 更换地面": "нажмите, чтобы сменить пол", "套内使用面积": "Площадь дома", "* 飘窗不计入使用面积；面积按墙体内净尺寸计算": "* терраса, крыльцо и лестница не входят в площадь; площади — по внутренним граням стен", "地面材料估算": "Смета на полы", "含 5% 损耗": "с запасом 5%", "地面材料合计": "Итого полы", "方案统计": "Статистика", "家具数量": "Предметов", "拆除墙体": "Снесено стен", "清除测量": "Стереть замеры", "清空布置": "Очистить", "旋转": "Поворот", "复制": "Копия", "删除": "Удалить", "属性": "Свойства", "完成": "Готово", "地面 / 属性": "Пол / свойства", "当前没有布置任何家具": "Мебели нет — очищать нечего", "已清空布置，可点「撤销」恢复": "Мебель убрана — «Отменить» вернёт", "收起家具库 ( [ )": "Скрыть библиотеку ( [ )", "展开家具库 ( [ )": "Показать библиотеку ( [ )", "收起属性面板 ( ] )": "Скрыть свойства ( ] )", "展开属性面板 ( ] )": "Показать свойства ( ] )", "房间": "Помещения", "名称": "Название", "使用面积": "Площадь", "周长": "Периметр", "开间": "Ширина", "进深": "Глубина", "地面材料": "Покрытие пола", "材料估价": "Стоимость", "房间内家具": "Мебель в помещении", "暂无": "Нет", "← 返回总览": "← К общему виду", "家具属性": "Предмет", "宽": "Ширина", "深": "Глубина", "中心": "Центр", "颜色": "Цвет", "占地面积": "Занимает", "旋转 90°": "Повернуть на 90°", "置于顶层": "На передний план", "置于底层": "На задний план", "← 返回": "← Назад", "拖动家具移动；拖动上方圆点旋转；拖动右下角方块调整尺寸。开启「贴墙吸附」后靠近墙面会自动贴齐。": "Тяните предмет, чтобы двигать; точка сверху — поворот, квадрат справа снизу — размер. С «Прилипанием к стенам» предмет встаёт вплотную к стене.", "承重墙（黑色）不可拆除": "Несущую стену (чёрную) сносить нельзя", "外墙属于建筑外围护结构，不建议拆除": "Наружную стену сносить не стоит — это ограждающая конструкция", "已恢复墙体": "Стена восстановлена", "按住拖出测量线，或依次点两点 · 靠近墙面自动吸附 · 点「选择」退出": "Протяните линию или нажмите две точки · прилипает к стенам · «Выбор» — выход", "点击两点（或按住拖动）测量距离 · 靠近墙面自动吸附 · Shift 锁定水平/垂直 · Esc 取消": "Нажмите две точки (или протяните) · прилипает к стенам · Shift — строго по горизонтали/вертикали · Esc — отмена", "点击灰色非承重墙标记拆除，再次点击恢复 · 黑色承重墙不可拆": "Нажмите на серую перегородку, чтобы снести, ещё раз — вернуть · чёрные несущие сносить нельзя", "点击添加，或拖到平面图中的指定位置": "Нажмите, чтобы добавить, или перетащите на план", "请拖到地面上": "Отпустите над полом", "户型装修方案": "sclifos-plan", "点或拖动家具库添加 · 单指拖动平移 · 双指缩放 · 选中家具后底部工具条可旋转 / 复制 / 删除": "Нажмите или перетащите из библиотеки · один палец — сдвиг · два — масштаб · панель снизу: поворот / копия / удалить", "单指旋转 · 双指缩放 / 平移 · 点家具或地面编辑 · 点门开关": "Один палец — вращение · два — масштаб и сдвиг · нажмите на мебель или пол · нажмите на дверь", "拖动左侧家具到平面图 · 滚轮缩放 · 拖动空白处平移 · T 切换 3D": "Тащите мебель слева на план · колесо — масштаб · тяните пустое место — сдвиг · T — 3D", "3D 场景与平面方案实时同步 · 右侧面板修改会立即生效 · T 返回 2D": "3D совпадает с планом · правки справа применяются сразу · T — назад в 2D", "3D 引擎仍在加载或加载失败（需要联网加载 three.js）": "3D ещё грузится или не загрузился (нужен интернет для three.js)", "已按 1:60 显示（与原始户型图同比例）": "Масштаб 1:60", "当前浏览器不支持网页全屏，可在 Safari 中「添加到主屏幕」后以全屏方式打开": "Браузер не умеет полноэкранный режим — в Safari «На экран Домой» откроет на весь экран", "无法进入全屏": "Не удалось включить полный экран", "退出全屏": "Выйти из полного экрана", "全屏": "Полный экран", "方案已导入": "План загружен", "文件格式不正确": "Неверный формат файла", "恢复为默认设计方案？（可撤销）": "Вернуть исходный план? (можно отменить)", "全屋": "Весь дом", "单指旋转 · 双指缩放 / 平移 · 点选家具后可拖动摆放 · 点门开关": "Один палец — вращение · два — масштаб и сдвиг · выбранную мебель можно тащить · нажмите на дверь", "左键旋转 · 右键平移 · 滚轮缩放 · 选中家具后拖动可摆放 · 点击门开关": "ЛКМ — вращение · ПКМ — сдвиг · колесо — масштаб · выбранную мебель можно тащить · клик по двери открывает", "左下摇杆移动 · 拖动画面转向 · 点门开关": "Джойстик — ходьба · тяните экран — поворот · нажмите на дверь", "WASD 移动 · 鼠标转向 · Shift 快走 · E 开关门 · Esc 暂停": "WASD — ходьба · мышь — взгляд · Shift — быстрее · E — дверь · Esc — пауза", "点击开始，从入户门进入": "Нажмите, чтобы войти с крыльца", "左下摇杆移动 · 在画面上拖动转向": "Джойстик — ходьба · тяните экран — поворот", "点门开关 · 点「退出漫游」回到鸟瞰": "Нажмите на дверь, чтобы открыть · «Выйти» — обратно к обзору", "<kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> 移动 · 鼠标转向 · <kbd>Shift</kbd> 快走": "<kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> — ходьба · мышь — взгляд · <kbd>Shift</kbd> — быстрее", "<kbd>E</kbd> 开关正前方的门 · <kbd>Esc</kbd> 暂停": "<kbd>E</kbd> — открыть дверь впереди · <kbd>Esc</kbd> — пауза", "◧ 家具库": "◧ Мебель", "属性 ◨": "Свойства ◨", "三室两厅两卫 · 装修设计": "Склифос, 20 · 1-й этаж", "2D 平面": "2D план", "3D 场景": "3D", "选择": "Выбор", "测量": "Линейка", "拆改墙体": "Снос стен", "适应": "Вписать", "鸟瞰": "Обзор", "漫游": "Прогулка", "斜视": "Сбоку", "俯视": "Сверху", "撤销": "Отменить", "重做": "Повторить", "尺寸": "Размеры", "家具": "Мебель", "网格": "Сетка", "承重墙": "Несущие", "贴墙吸附": "Прилипание", "全高墙": "Стены целиком", "剖切墙": "Срез стен", "房间名": "Подписи", "夜景": "Ночь", "日照": "Солнце", "文件 ▾": "Файл ▾", "导出图片": "Сохранить картинку", "导出方案 JSON": "Сохранить план (JSON)", "导入方案": "Загрузить план", "重置为默认方案": "Сбросить к исходному", "房间 · 点击飞到该房间": "Помещения · нажмите, чтобы перелететь", "漫游模式": "Прогулка", "退出漫游": "Выйти", "当前比例": "Масштаб", "切换 2D / 3D (T)": "2D / 3D (T)", "选择 / 移动 (V)": "Выбор / перемещение (V)", "测量 (M)": "Линейка (M)", "拆改非承重墙 (X)": "Снос перегородок (X)", "缩小": "Уменьшить", "放大": "Увеличить", "适应窗口 (F)": "Вписать в окно (F)", "按 1:60 显示（与原图同比例）": "Масштаб 1:60", "按 1:100 显示": "Масштаб 1:100 (как в проекте)", "撤销 (Ctrl+Z)": "Отменить (Ctrl+Z)", "重做 (Ctrl+Shift+Z)": "Повторить (Ctrl+Shift+Z)", "清空所有家具家电（可撤销）": "Убрать всю мебель (можно отменить)", "拖动家具时贴墙吸附": "Прилипание мебели к стенам", "橡木地板": "Паркет дуб", "胡桃木地板": "Паркет орех", "800 地砖": "Керамогранит 80×80", "600 地砖": "Уличный керамогранит 60×60", "大理石": "Мрамор", "300 防滑砖": "Плитка 30×30, противоскользящая", "水磨石": "Бетонный пол с топпингом", "满铺地毯": "Ковролин", "卧室": "Спальня", "客厅": "Гостиная", "餐厨": "Кухня и столовая", "卫浴": "Санузел", "家电": "Техника", "书房 · 休闲": "Кабинет и отдых", "双人床 1.8m": "Кровать 1,8 м", "双人床 1.5m": "Кровать 1,5 м", "双人床": "Двуспальная кровать", "单人床": "Односпальная кровать", "婴儿床": "Детская кроватка", "床头柜": "Тумбочка", "衣柜": "Шкаф", "小衣柜": "Шкаф малый", "梳妆台": "Туалетный столик", "书桌": "Письменный стол", "椅子": "Стул", "书架": "Книжная полка", "飘窗垫": "Подушка на подоконник", "三人沙发": "Диван трёхместный", "双人沙发": "Диван двухместный", "转角沙发": "Угловой диван", "单人沙发": "Кресло", "懒人沙发": "Кресло-мешок", "茶几": "Журнальный столик", "边几": "Приставной столик", "电视柜": "ТВ-тумба", "地毯": "Ковёр", "鞋柜": "Обувница", "玄关柜": "Шкаф в прихожую", "落地灯": "Торшер", "绿植": "Растение", "大绿植": "Большое растение", "餐桌": "Обеденный стол", "六人餐桌": "Стол на 6 персон", "圆桌": "Круглый стол", "餐椅": "Стул", "岛台": "Кухонный остров", "吧椅": "Барный стул", "橱柜台面": "Кухонная столешница", "燃气灶": "Варочная панель", "水槽": "Мойка", "冰箱": "Холодильник", "餐边柜": "Буфет", "马桶": "Унитаз", "浴室柜": "Тумба с раковиной", "双盆浴室柜": "Тумба с двумя раковинами", "淋浴房": "Душевая", "淋浴区": "Душевая зона", "浴缸": "Ванна", "洗衣机": "Стиральная машина", "洗衣池": "Хозяйственная раковина", "电热水器": "Водонагреватель", "储物柜": "Шкаф для хранения", "65 寸电视": "Телевизор 65\"", "55 寸电视": "Телевизор 55\"", "对开门冰箱": "Холодильник Side-by-Side", "柜机空调": "Колонный кондиционер", "挂机空调": "Сплит-система", "洗碗机": "Посудомойка", "蒸烤箱高柜": "Пенал с духовкой", "烘干机": "Сушильная машина", "空气净化器": "Очиститель воздуха", "长书桌": "Длинный стол", "办公椅": "Офисное кресло", "大书架": "Большой стеллаж", "立式钢琴": "Пианино", "跑步机": "Беговая дорожка", "阅读椅": "Кресло для чтения", "茶桌": "Чайный столик", "休闲椅": "Шезлонг"};
+const money = v => Math.round(v).toLocaleString('ru-RU') + ' MDL';
+const nm = s => LANG === 'ru' ? (RU[s] ?? s) : LANG === 'en' ? (NAMES_EN[s] ?? s) : LANG === 'zht' ? s2t(s) : s;
 // 静态文案：元素上写 data-en / data-en-title，中文原文首次切换时存进 dataset
 function applyStaticLang(){
-  document.documentElement.lang = {zh:'zh-CN', zht:'zh-TW', en:'en'}[LANG];
+  document.documentElement.lang = {ru:'ru', en:'en'}[LANG];
   document.title = tr('户型装修设计', 'Floor Plan Designer');
   document.querySelectorAll('[data-en]').forEach(el => { el.dataset.zh ??= el.textContent; el.textContent = tr(el.dataset.zh, el.dataset.en); });
   document.querySelectorAll('[data-en-title]').forEach(el => { el.dataset.zhTitle ??= el.title; el.title = tr(el.dataset.zhTitle, el.dataset.enTitle); });
@@ -461,14 +462,14 @@ const ROOMS = [
   {id:'landing', name:'Площадка', poly:R(-1300, 1000, -200, 4650), mat:'tile600', counted:false, out:true},
 ];
 const MATS = {
-  wood:    {name:'橡木地板', price:320, sw:'#d8b88a'},
-  walnut:  {name:'胡桃木地板', price:380, sw:'#9b7250'},
-  tile800: {name:'800 地砖', price:220, sw:'#ebe6dc'},
-  tile600: {name:'600 地砖', price:160, sw:'#dfe3e1'},
-  marble:  {name:'大理石', price:650, sw:'#f1eee8'},
-  antislip:{name:'300 防滑砖', price:140, sw:'#d3d8d4'},
-  terrazzo:{name:'水磨石', price:280, sw:'#e6dfd3'},
-  carpet:  {name:'满铺地毯', price:200, sw:'#c9c3d3'},
+  wood:    {name:'橡木地板', price:650, sw:'#d8b88a'},
+  walnut:  {name:'胡桃木地板', price:850, sw:'#9b7250'},
+  tile800: {name:'800 地砖', price:450, sw:'#ebe6dc'},
+  tile600: {name:'600 地砖', price:400, sw:'#dfe3e1'},
+  marble:  {name:'大理石', price:1500, sw:'#f1eee8'},
+  antislip:{name:'300 防滑砖', price:300, sw:'#d3d8d4'},
+  terrazzo:{name:'水磨石', price:250, sw:'#e6dfd3'},
+  carpet:  {name:'满铺地毯', price:250, sw:'#c9c3d3'},
 };
 // 家具库：[类型, 名称, 宽, 深, 颜色]
 const LIB = [
@@ -871,7 +872,7 @@ function renderAll(){
 
 function updateHeader(){
   const tot = ROOMS.filter(r => r.counted !== false).reduce((a,r) => a + area(r.poly), 0);
-  $('#subtitle').textContent = tr(`套内使用面积约 ${fmt(tot)} m² · 尺寸单位 mm · 原图比例 1:60`, `Net floor area ≈ ${fmt(tot)} m² · Units: mm · Original scale 1:60`);
+  $('#subtitle').textContent = tr(`套内使用面积约 ${fmt(tot)} m² · 尺寸单位 mm · 原图比例 1:60`, `Net floor area ≈ ${fmt(tot)} m² · Units: mm · Original scale 1:60`, `Площадь дома ≈ ${fmt(tot)} m² · размеры в мм`);
   $('#undo').disabled = !undoStack.length; $('#redo').disabled = !redoStack.length;
   $('#undo').style.opacity = undoStack.length ? 1 : .4; $('#redo').style.opacity = redoStack.length ? 1 : .4;
 }
@@ -898,7 +899,7 @@ function overviewPanel(){
   ROOMS.forEach(r => { const m = state.rooms[r.id].mat; byMat[m] = (byMat[m]||0) + area(r.poly); });
   let cost = 0;
   const matRows = Object.entries(byMat).map(([m,a]) => { const c = a*MATS[m].price*1.05; cost += c;
-    return `<tr><td><span class="sw" style="background:${MATS[m].sw}"></span>${nm(MATS[m].name)}</td><td class="r">${fmt(a,1)} m²</td><td class="r">¥${Math.round(c).toLocaleString()}</td></tr>`; }).join('');
+    return `<tr><td><span class="sw" style="background:${MATS[m].sw}"></span>${nm(MATS[m].name)}</td><td class="r">${fmt(a,1)} m²</td><td class="r">${money(c)}</td></tr>`; }).join('');
   const dem = state.demolished.map(id => WALLS[+id.slice(1)]);
   const demLen = dem.reduce((a,w) => a + Math.max(w[2]-w[0], w[3]-w[1]), 0) / 1000;
   return `
@@ -908,7 +909,7 @@ function overviewPanel(){
     <div class="muted" style="font-size:11px;margin-top:4px">${tr('* 飘窗不计入使用面积；面积按墙体内净尺寸计算','* Bay windows are excluded; areas use net inner wall dimensions')}</div></section>
   <section><h3>${tr('地面材料估算','Flooring Estimate')} <small>${tr('含 5% 损耗','incl. 5% waste')}</small></h3>
     <table>${matRows}</table>
-    <div class="total"><span>${tr('地面材料合计','Flooring total')}</span><b>¥${Math.round(cost).toLocaleString()}</b></div></section>
+    <div class="total"><span>${tr('地面材料合计','Flooring total')}</span><b>${money(cost)}</b></div></section>
   <section><h3>${tr('方案统计','Plan Stats')}</h3>
     <div class="stats"><div><small>${tr('家具数量','Furniture')}</small><span class="big">${state.furniture.length}</span></div>
       <div><small>${tr('拆除墙体','Walls removed')}</small><span class="big">${fmt(demLen,1)}</span> m</div></div>
@@ -928,6 +929,13 @@ function overviewPanel(){
     <kbd>Toolbar</kbd><span>Bottom bar can rotate / duplicate / delete</span>
     <kbd>Measure</kbd><span>Hold and drag a line, or tap two points</span>
     <kbd>3D walk</kbd><span>Joystick moves, drag to look, tap doors to open</span>
+  </div></section>`, `<section><h3>Сенсорное управление</h3><div class="kbd">
+    <kbd>Один палец</kbd><span>сдвиг по пустому месту</span><kbd>Два пальца</kbd><span>масштаб и сдвиг</span>
+    <kbd>Библиотека</kbd><span>нажмите — предмет встанет в центр, или потяните вправо на нужное место</span>
+    <kbd>Предмет</kbd><span>тяните, чтобы двигать; точка сверху — поворот, квадрат справа снизу — размер</span>
+    <kbd>Панель</kbd><span>снизу: поворот / копия / удалить</span>
+    <kbd>Линейка</kbd><span>протяните линию или нажмите две точки</span>
+    <kbd>3D-прогулка</kbd><span>джойстик — ходьба, тяните экран — поворот, нажмите на дверь</span>
   </div></section>`) : ''}
   ${tr(`<section><h3>键盘快捷键</h3><div class="kbd">
     <kbd>拖拽</kbd><span>左侧家具拖入平面图</span><kbd>V</kbd><span>选择 / 移动</span><kbd>M</kbd><span>测量（Shift 水平/垂直）</span>
@@ -937,6 +945,10 @@ function overviewPanel(){
     <kbd>Drag</kbd><span>Drag furniture onto the plan</span><kbd>V</kbd><span>Select / move</span><kbd>M</kbd><span>Measure (Shift: horizontal/vertical)</span>
     <kbd>X</kbd><span>Demolish non-bearing walls (black = bearing)</span><kbd>R</kbd><span>Rotate 90° (Shift reverses)</span><kbd>Arrows</kbd><span>Nudge 10mm (Shift 100mm)</span>
     <kbd>⌘/Ctrl D</kbd><span>Duplicate</span><kbd>Delete</kbd><span>Delete</span><kbd>⌘/Ctrl Z</kbd><span>Undo</span><kbd>T</kbd><span>Toggle 2D / 3D</span><kbd>F</kbd><span>Fit to window</span><kbd>Esc</kbd><span>Deselect</span>
+  </div></section>`, `<section><h3>Горячие клавиши</h3><div class="kbd">
+    <kbd>Перетаскивание</kbd><span>мебель слева — на план</span><kbd>V</kbd><span>выбор / перемещение</span><kbd>M</kbd><span>линейка (Shift — по горизонтали/вертикали)</span>
+    <kbd>X</kbd><span>снос перегородок (чёрные — несущие)</span><kbd>R</kbd><span>поворот на 90° (Shift — обратно)</span><kbd>Стрелки</kbd><span>сдвиг на 10 мм (Shift — 100 мм)</span>
+    <kbd>⌘/Ctrl D</kbd><span>копия</span><kbd>Delete</kbd><span>удалить</span><kbd>⌘/Ctrl Z</kbd><span>отменить</span><kbd>T</kbd><span>2D / 3D</span><kbd>F</kbd><span>вписать в окно</span><kbd>Esc</kbd><span>снять выделение</span>
   </div></section>`)}`;
 }
 function bindOverview(){
@@ -964,7 +976,7 @@ function renderFab(){
 function clearLayout(){
   const n = state.furniture.length;
   if (!n) return toast(tr('当前没有布置任何家具', 'There is no furniture to clear'));
-  if (!confirm(tr(`确定清空全部 ${n} 件家具 / 家电吗？\n墙体、地面材料和测量线会保留，可点「撤销」恢复。`, `Remove all ${n} furniture / appliance items?\nWalls, flooring and measurements are kept. You can Undo this.`))) return;
+  if (!confirm(tr(`确定清空全部 ${n} 件家具 / 家电吗？\n墙体、地面材料和测量线会保留，可点「撤销」恢复。`, `Remove all ${n} furniture / appliance items?\nWalls, flooring and measurements are kept. You can Undo this.`, `Убрать все предметы (${n})?\nСтены, полы и замеры останутся. Можно отменить.`))) return;
   ui.sel = null; mutate(() => state.furniture = []);
   toast(tr('已清空布置，可点「撤销」恢复', 'Layout cleared — Undo to restore'));
 }
@@ -1000,7 +1012,7 @@ function closeDrawers(){ if (narrow()) drawer(null); }
 
 function roomPanel(r){
   const st = state.rooms[r.id], a = area(r.poly), [x0,y0,x1,y1] = bbox(r.poly), inside = state.furniture.filter(f => f.cx>x0&&f.cx<x1&&f.cy>y0&&f.cy<y1);
-  const mats = Object.entries(MATS).map(([k,m]) => `<button class="mat ${k===st.mat?'on':''}" data-mat="${k}"><i style="background:${m.sw}"></i><span>${nm(m.name)}<small>¥${m.price}/m²</small></span></button>`).join('');
+  const mats = Object.entries(MATS).map(([k,m]) => `<button class="mat ${k===st.mat?'on':''}" data-mat="${k}"><i style="background:${m.sw}"></i><span>${nm(m.name)}<small>${money(m.price)}/m²</small></span></button>`).join('');
   return `<section><h3>${tr('房间','Room')}</h3>
     <div class="form"><label class="full">${tr('名称','Name')}<input id="rName" value="${esc(nm(st.name))}"></label></div>
     <div class="stats" style="margin-top:10px">
@@ -1008,10 +1020,10 @@ function roomPanel(r){
       <div><small>${tr('周长','Perimeter')}</small><span class="big">${fmt(perim(r.poly),1)}</span> m</div>
       <div><small>${tr('开间','Width')}</small><span class="big">${x1-x0}</span> mm</div>
       <div><small>${tr('进深','Depth')}</small><span class="big">${y1-y0}</span> mm</div></div>
-    <div class="muted">${tr(`墙面面积（层高 2.8m，未扣门窗）约 ${fmt(perim(r.poly)*2.8,1)} m²`, `Wall area (2.8m ceiling, openings not deducted) ≈ ${fmt(perim(r.poly)*2.8,1)} m²`)}</div></section>
+    <div class="muted">${tr(`墙面面积（层高 2.8m，未扣门窗）约 ${fmt(perim(r.poly)*2.8,1)} m²`, `Wall area (2.8m ceiling, openings not deducted) ≈ ${fmt(perim(r.poly)*2.8,1)} m²`, `Площадь стен (потолок 2,8 м, без вычета проёмов) ≈ ${fmt(perim(r.poly)*2.8,1)} m²`)}</div></section>
   <section><h3>${tr('地面材料','Flooring')}</h3><div class="mats">${mats}</div>
-    <div class="total"><span>${tr('材料估价','Estimated cost')}</span><b>¥${Math.round(a*MATS[st.mat].price*1.05).toLocaleString()}</b></div></section>
-  <section><h3>${tr('房间内家具','Furniture in room')} <small>${tr(`${inside.length} 件`, `${inside.length} items`)}</small></h3>
+    <div class="total"><span>${tr('材料估价','Estimated cost')}</span><b>${money(a*MATS[st.mat].price*1.05)}</b></div></section>
+  <section><h3>${tr('房间内家具','Furniture in room')} <small>${tr(`${inside.length} 件`, `${inside.length} items`, `${inside.length} шт.`)}</small></h3>
     <table>${inside.map(f => `<tr class="click" data-fid="${f.id}"><td>${esc(nm(f.name))}</td><td class="r muted">${f.w}×${f.d}</td></tr>`).join('') || `<tr><td class="muted">${tr('暂无','None')}</td></tr>`}</table>
     <div class="actions"><button class="btn" id="back">${tr('← 返回总览','← Back to overview')}</button></div></section>`;
 }
@@ -1086,7 +1098,7 @@ function addItem(it, x, y){
   pushOut(f);
   ui.sel = {kind:'furn', id:f.id};
   mutate(() => type==='rug' ? state.furniture.unshift(f) : state.furniture.push(f));
-  toast(tr(`已添加「${name}」${w}×${d}`, `Added "${nm(name)}" ${w}×${d}`));
+  toast(tr(`已添加「${name}」${w}×${d}`, `Added "${nm(name)}" ${w}×${d}`, `Добавлено: «${nm(name)}» ${w}×${d}`));
 }
 function toggleWall(id){
   const w = WALLS[+id.slice(1)];
@@ -1094,7 +1106,7 @@ function toggleWall(id){
   if (w[4]==='e') return toast(tr('外墙属于建筑外围护结构，不建议拆除', 'Exterior walls are part of the building envelope and should not be removed'));
   const on = state.demolished.includes(id);
   mutate(() => state.demolished = on ? state.demolished.filter(x => x!==id) : [...state.demolished, id]);
-  toast(on ? tr('已恢复墙体', 'Wall restored') : tr(`已标记拆除 ${Math.max(w[2]-w[0], w[3]-w[1])} mm 墙体`, `Marked ${Math.max(w[2]-w[0], w[3]-w[1])} mm of wall for removal`));
+  toast(on ? tr('已恢复墙体', 'Wall restored') : tr(`已标记拆除 ${Math.max(w[2]-w[0], w[3]-w[1])} mm 墙体`, `Marked ${Math.max(w[2]-w[0], w[3]-w[1])} mm of wall for removal`, `Под снос: ${Math.max(w[2]-w[0], w[3]-w[1])} мм стены`));
 }
 
 function setTool(t){
@@ -1329,7 +1341,7 @@ function buildLib(){
       <svg viewBox="${-w/2-pad} ${-d/2-pad} ${w+2*pad} ${d+2*pad}">${furnSVG(t,w,d,col)}</svg><b>${esc(nm(n))}</b><small>${w}×${d}</small></div>`;
   }).join('')}</div>`).join('') + `<div class="hint">${tr(
     `家具按真实尺寸（mm）绘制。${COARSE ? '点一下放到画面中央，或按住向右拖到平面图 / 3D 地面上的指定位置（上下滑动为滚动列表）。' : '点击添加到画面中央，或直接拖到平面图 / 3D 地面上。'}添加后可在右侧修改宽深与颜色。`,
-    `Furniture is drawn at real size (mm). ${COARSE ? 'Tap to place at the center, or hold and drag right onto the plan / 3D floor (swipe up/down to scroll).' : 'Click to add at the center, or drag onto the plan / 3D floor.'} Edit size and color in the right panel afterwards.`)}</div>`;
+    `Furniture is drawn at real size (mm). ${COARSE ? 'Tap to place at the center, or hold and drag right onto the plan / 3D floor (swipe up/down to scroll).' : 'Click to add at the center, or drag onto the plan / 3D floor.'} Edit size and color in the right panel afterwards.`, `Мебель нарисована в натуральную величину (мм). ${COARSE ? 'Нажмите — предмет встанет в центр, или потяните вправо на план / пол в 3D (вверх-вниз — прокрутка).' : 'Нажмите — предмет встанет в центр, или перетащите на план / пол в 3D.'} Размер и цвет меняются справа.`)}</div>`;
   document.querySelectorAll('.item').forEach(el => el.addEventListener('pointerdown', e => {
     if (e.button) return;
     libDrag = {el, id:e.pointerId, sx:e.clientX, sy:e.clientY, it:itemOf(el), ghost:null};
