@@ -444,9 +444,18 @@ const FRAMES = {
         [2800, -800, 12450, 600, -3.9, -3.5], [2800, 11600, 12450, 13000, -3.9, -3.5],
         [11050, 600, 12450, 11600, -3.9, -3.5], [2800, 600, 4400, 11600, -3.9, -3.5],
         [4400, 6100, 11050, 6900, -3.9, -3.5], [4400, 8500, 11050, 9300, -3.9, -3.5],
-        // под частью без подвала (котельная, санузел, гараж): ленты 1000, подошва −3,400
-        [-500, 700, 500, 12700, -3.4, -3.0], [500, 700, 2800, 1700, -3.4, -3.0],
-        [500, 5330, 2800, 6130, -3.4, -3.0], [500, 11700, 2800, 12700, -3.4, -3.0],
+        // под частью без подвала (котельная, санузел, гараж): ленты 1000, подошва −3,400; от x = 1650 к подвалу — уступ до −3,900
+        [-500, 700, 500, 12700, -3.4, -3.0],
+        [500, 700, 1650, 1700, -3.4, -3.0], [1650, 700, 2800, 1700, -3.9, -3.5],
+        [500, 5330, 1650, 6130, -3.4, -3.0], [1650, 5330, 2800, 6130, -3.9, -3.5],
+        [500, 11700, 1650, 12700, -3.4, -3.0], [1650, 11700, 2800, 12700, -3.9, -3.5],
+      ],
+      // Подводка под сохраняемые стены (лист C-3): захватки с очерёдностью 1–4, ярусы по 500 от −1,600 до −3,500.
+      // Ширина 550 = стена 400 + бетонная рубашка 150 изнутри
+      under: [
+        ...[4,1,2,3,4,1,2,3].map((g, i) => [11300, 1650 + i*1200, 11850, 2850 + i*1200, g]), [11300, 11250, 11850, 12400, 4],   // ось 4
+        ...[[4,6700,7450],[1,7450,8650],[2,8650,9850],[3,9850,11050]].map(([g, a, b]) => [3600, a, 4150, b, g]), [3600, 11050, 4150, 12400, 4],   // ось 2
+        ...[1,2,3,2,1].map((g, i) => [4650 + i*1100, 11850, 5750 + i*1100, 12400, g]), [4150, 11850, 4650, 12400, 4], [10150, 11850, 11300, 12400, 4],   // ось A
       ],
       cols: colsAt('2H 3H 4H 2G 2F 3E 2D 3D 4D 2C 3C 4C 2A 3A 4A'),
       beams: [beamY('H',2,4), beamY('D',2,4), beamY('C',2,4), beamY('A',2,4), beamX(2,'H','A'), beamX(3,'H','A'), beamX(4,'H','A')]},
@@ -1134,10 +1143,13 @@ function renderSel(){
   $('#gSel').innerHTML = s;
 }
 
+const GRIP = {1:'#4f9d69', 2:'#d9b13b', 3:'#e07b39', 4:'#b8412c'};   // очерёдность захваток подводки
 function renderFrame(){
   const on = ui.layers.bearing, R = ([x0,y0,x1,y1], f, ex) => `<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="${f}" ${ex}/>`;
+  const T = ([x0,y0,x1,y1], g) => `<text x="${(x0+x1)/2}" y="${(y0+y1)/2}" font-size="220" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff" stroke="#3a2a1a" stroke-width="30" paint-order="stroke">${g}</text>`;
+  const under = on ? (FRAME.under || []).map(([x0,y0,x1,y1,g]) => R([x0,y0,x1,y1], GRIP[g], 'stroke="#3a2a1a" stroke-width="1" vector-effect="non-scaling-stroke"') + T([x0,y0,x1,y1], g)).join('') : '';
   $('#gFrame').innerHTML = on ? (FRAME.found || []).map(f => R(f, 'rgba(96,104,118,.16)', 'stroke="#606876" stroke-width="1" stroke-dasharray="10 5" vector-effect="non-scaling-stroke"')).join('') + FRAME.beams.map(b => R(b, 'rgba(214,80,47,.18)', 'stroke="#d6502f" stroke-width="1" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"')).join('')
-    + FRAME.cols.map(c => R(c, '#d6502f', 'stroke="#7a2614" stroke-width="1" vector-effect="non-scaling-stroke"')).join('') : '';
+    + FRAME.cols.map(c => R(c, '#d6502f', 'stroke="#7a2614" stroke-width="1" vector-effect="non-scaling-stroke"')).join('') + under : '';
 }
 function renderAll(){
   renderFrame();
@@ -2634,6 +2646,9 @@ function wallBox([x0, y0, x1, y1], yb, yt, m){
 }
 const frameXMat = new THREE.MeshBasicMaterial({color:'#d6502f', transparent:true, opacity:.75, depthTest:false}), beamXMat = new THREE.MeshBasicMaterial({color:'#f08a5d', transparent:true, opacity:.45, depthTest:false});
 const foundXMat = new THREE.MeshBasicMaterial({color:'#5d6676', transparent:true, opacity:.55, depthTest:false});
+const xray = (c, o) => new THREE.MeshBasicMaterial({color:c, transparent:true, opacity:o, depthTest:false});
+const prepXMat = xray('#a9adb3', .5), gravelXMat = xray('#8a7a62', .5);
+const underXMat = {1:xray('#4f9d69', .8), 2:xray('#d9b13b', .8), 3:xray('#e07b39', .8), 4:xray('#b8412c', .8)};
 const frameG = new THREE.Group();
 const fenceMat = new THREE.MeshStandardMaterial({color:'#3f3d3a', roughness:.6, metalness:.3}), railMat = new THREE.MeshStandardMaterial({color:'#2f2d2a', roughness:.4, metalness:.6});
 function railing([x0, y0, x1, y1], zb, glass){
@@ -2723,9 +2738,16 @@ function buildArch(){
   const fb = Math.min(0, WALL_BASE);
   FRAME.cols.forEach(([x0, y0, x1, y1]) => frameG.add(box(M(x1-x0), H - fb, M(y1-y0), frameXMat, wx((x0+x1)/2), fb, wz((y0+y1)/2))));
   const lvl0 = FLOOR === 0 ? -3.3 : 0;
-  (FRAME.found || []).forEach(([x0, y0, x1, y1, zb, zt]) => frameG.add(box(M(x1-x0), zt - zb, M(y1-y0), foundXMat, wx((x0+x1)/2), zb - lvl0, wz((y0+y1)/2))));
+  (FRAME.found || []).forEach(([x0, y0, x1, y1, zb, zt]) => {
+    const cx = wx((x0+x1)/2), cz = wz((y0+y1)/2), w = M(x1-x0), d = M(y1-y0);
+    frameG.add(box(w, zt - zb, d, foundXMat, cx, zb - lvl0, cz),
+               box(w + .2, .08, d + .2, prepXMat, cx, zb - .08 - lvl0, cz),       // бетонная подготовка C7,5, 80 мм
+               box(w + .2, .1, d + .2, gravelXMat, cx, zb - .18 - lvl0, cz));     // щебень, втрамбованный в грунт, 100 мм
+  });
+  (FRAME.under || []).forEach(([x0, y0, x1, y1, g]) => [[-2.1, -1.6], [-2.6, -2.1], [-3.1, -2.6], [-3.5, -3.1]].forEach(([zb, zt]) =>
+    frameG.add(box(M(x1-x0) - .03, zt - zb - .03, M(y1-y0) - .03, underXMat[g], wx((x0+x1)/2), zb - lvl0, wz((y0+y1)/2)))));
   FRAME.beams.forEach(([x0, y0, x1, y1]) => frameG.add(box(M(x1-x0) + .002, .4, M(y1-y0) + .002, beamXMat, wx((x0+x1)/2), H - .4, wz((y0+y1)/2))));
-  frameG.traverse(o => { o.renderOrder = o.material === foundXMat ? 9 : 10; o.castShadow = o.receiveShadow = false; });   // фундамент под колоннами
+  frameG.traverse(o => { o.renderOrder = o.material === foundXMat || o.material === prepXMat || o.material === gravelXMat ? 9 : 10; o.castShadow = o.receiveShadow = false; });   // фундамент под колоннами
   frameG.visible = opt.frame;
   applyLight(); applyGrow();
 }
