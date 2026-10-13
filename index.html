@@ -438,7 +438,17 @@ const colsAt = s => s.split(' ').map(t => col(t[0], t[1]));
 const beamY = (b, a0, a1) => [AX[a0] - 200, AY[b] - 200, AX[a1] + 200, AY[b] + 200];   // ригель вдоль оси буквы
 const beamX = (a, b0, b1) => [AX[a] - 200, AY[b0] - 200, AX[a] + 200, AY[b1] + 200];   // ригель вдоль оси цифры
 const FRAMES = {
-  0: {cols: colsAt('2H 3H 4H 2G 2F 3E 2D 3D 4D 2C 3C 4C 2A 3A 4A'),
+  0: {// Фундаменты (лист C-7): [x0,y0,x1,y1, подошва, верх] в абсолютных отметках
+      found: [
+        // под подвалом: подошва −3,900, плита 400; наружные 1400 (800 наружу / 600 внутрь), по оси 2 — 1600, по D и C — 800
+        [2800, -800, 12450, 600, -3.9, -3.5], [2800, 11600, 12450, 13000, -3.9, -3.5],
+        [11050, 600, 12450, 11600, -3.9, -3.5], [2800, 600, 4400, 11600, -3.9, -3.5],
+        [4400, 6100, 11050, 6900, -3.9, -3.5], [4400, 8500, 11050, 9300, -3.9, -3.5],
+        // под частью без подвала (котельная, санузел, гараж): ленты 1000, подошва −3,400
+        [-500, 700, 500, 12700, -3.4, -3.0], [500, 700, 2800, 1700, -3.4, -3.0],
+        [500, 5330, 2800, 6130, -3.4, -3.0], [500, 11700, 2800, 12700, -3.4, -3.0],
+      ],
+      cols: colsAt('2H 3H 4H 2G 2F 3E 2D 3D 4D 2C 3C 4C 2A 3A 4A'),
       beams: [beamY('H',2,4), beamY('D',2,4), beamY('C',2,4), beamY('A',2,4), beamX(2,'H','A'), beamX(3,'H','A'), beamX(4,'H','A')]},
   1: {cols: [...colsAt('2H 3H 4H 1G 2G 1F 2F 1E 2E 2D 3D 3C 1A'),
              [11050, 6300, 11450, 6700], [11050, 8700, 11450, 9100], [4000, 8700, 4400, 9100], [6650, 11600, 7050, 12000]],   // приставные стойки Стп1
@@ -614,7 +624,7 @@ const ROOMS = [
   {id:'bstair', name:'Лестница', poly:R(6770, 6700, 11450, 8700), mat:'tile800', at:[7200, 8350]},
   {id:'b16', name:'Подвал', poly:R(4000, 9100, 11450, 12000), mat:'tile800', at:[7700, 10500]},
 ];
-const BOUNDS = {x:-1000, y:-4900, w:16400, h:20000}, VIEW = {iso:[7, 19, 13], top:24};
+const BOUNDS = {x:-2600, y:-4900, w:17600, h:20000}, VIEW = {iso:[7, 19, 13], top:24};
 return {WALLS, WINS, DOORS, SLIDES, ENTRY, FACADE_A, ROOMS, WALL_BASE:0, BLOCKS:[], BOUNDS, VIEW, EXTRA_DIMS:[]};
 }
 const {WALLS, WINS, DOORS, SLIDES, ENTRY, FACADE_A, ROOMS, WALL_BASE, BLOCKS, BOUNDS, VIEW, EXTRA_DIMS} = FLOOR === 2 ? floor2() : FLOOR === 0 ? floor0() : floor1();
@@ -1126,7 +1136,7 @@ function renderSel(){
 
 function renderFrame(){
   const on = ui.layers.bearing, R = ([x0,y0,x1,y1], f, ex) => `<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="${f}" ${ex}/>`;
-  $('#gFrame').innerHTML = on ? FRAME.beams.map(b => R(b, 'rgba(214,80,47,.18)', 'stroke="#d6502f" stroke-width="1" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"')).join('')
+  $('#gFrame').innerHTML = on ? (FRAME.found || []).map(f => R(f, 'rgba(96,104,118,.16)', 'stroke="#606876" stroke-width="1" stroke-dasharray="10 5" vector-effect="non-scaling-stroke"')).join('') + FRAME.beams.map(b => R(b, 'rgba(214,80,47,.18)', 'stroke="#d6502f" stroke-width="1" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"')).join('')
     + FRAME.cols.map(c => R(c, '#d6502f', 'stroke="#7a2614" stroke-width="1" vector-effect="non-scaling-stroke"')).join('') : '';
 }
 function renderAll(){
@@ -2623,6 +2633,7 @@ function wallBox([x0, y0, x1, y1], yb, yt, m){
   }
 }
 const frameXMat = new THREE.MeshBasicMaterial({color:'#d6502f', transparent:true, opacity:.75, depthTest:false}), beamXMat = new THREE.MeshBasicMaterial({color:'#f08a5d', transparent:true, opacity:.45, depthTest:false});
+const foundXMat = new THREE.MeshBasicMaterial({color:'#5d6676', transparent:true, opacity:.55, depthTest:false});
 const frameG = new THREE.Group();
 const fenceMat = new THREE.MeshStandardMaterial({color:'#3f3d3a', roughness:.6, metalness:.3}), railMat = new THREE.MeshStandardMaterial({color:'#2f2d2a', roughness:.4, metalness:.6});
 function railing([x0, y0, x1, y1], zb, glass){
@@ -2711,8 +2722,10 @@ function buildArch(){
   clearGroup(frameG);
   const fb = Math.min(0, WALL_BASE);
   FRAME.cols.forEach(([x0, y0, x1, y1]) => frameG.add(box(M(x1-x0), H - fb, M(y1-y0), frameXMat, wx((x0+x1)/2), fb, wz((y0+y1)/2))));
+  const lvl0 = FLOOR === 0 ? -3.3 : 0;
+  (FRAME.found || []).forEach(([x0, y0, x1, y1, zb, zt]) => frameG.add(box(M(x1-x0), zt - zb, M(y1-y0), foundXMat, wx((x0+x1)/2), zb - lvl0, wz((y0+y1)/2))));
   FRAME.beams.forEach(([x0, y0, x1, y1]) => frameG.add(box(M(x1-x0) + .002, .4, M(y1-y0) + .002, beamXMat, wx((x0+x1)/2), H - .4, wz((y0+y1)/2))));
-  frameG.traverse(o => { o.renderOrder = 10; o.castShadow = o.receiveShadow = false; });
+  frameG.traverse(o => { o.renderOrder = o.material === foundXMat ? 9 : 10; o.castShadow = o.receiveShadow = false; });   // фундамент под колоннами
   frameG.visible = opt.frame;
   applyLight(); applyGrow();
 }
