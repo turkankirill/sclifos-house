@@ -276,6 +276,7 @@ main.drawer-panel #fab{opacity:0;visibility:hidden}
       <button class="btn chip on" data-t="labels" data-en="Labels">房间名</button>
       <button class="btn chip" data-t="night" data-en="Night">夜景</button>
       <button class="btn chip" data-t="frame" data-en="Frame">Каркас</button>
+      <button class="btn chip" data-t="pit" data-en="Pit" id="tPit">Котлован</button>
     </div>
     <div class="grp only3d"><label class="range"><span data-en="Sun">日照</span> <input type="range" id="sun" min="7" max="18" step=".25" value="10" style="width:84px"><span id="sunT">10:00</span></label></div>
     <div class="spacer"></div>
@@ -450,17 +451,11 @@ const FRAMES = {
         [500, 5330, 1650, 6130, -3.4, -3.0], [1650, 5330, 2800, 6130, -3.9, -3.5],
         [500, 11700, 1650, 12700, -3.4, -3.0], [1650, 11700, 2800, 12700, -3.9, -3.5],
       ],
-      // Подводка под сохраняемые стены (лист C-3): захватки с очерёдностью 1–4, ярусы по 500 от −1,600 до −3,500.
-      // Ширина 550 = стена 400 + бетонная рубашка 150 изнутри
-      under: [
-        ...[4,1,2,3,4,1,2,3].map((g, i) => [11300, 1650 + i*1200, 11850, 2850 + i*1200, g]), [11300, 11250, 11850, 12400, 4],   // ось 4
-        ...[[4,6700,7450],[1,7450,8650],[2,8650,9850],[3,9850,11050]].map(([g, a, b]) => [3600, a, 4150, b, g]), [3600, 11050, 4150, 12400, 4],   // ось 2
-        ...[1,2,3,2,1].map((g, i) => [4650 + i*1100, 11850, 5750 + i*1100, 12400, g]), [4150, 11850, 4650, 12400, 4], [10150, 11850, 11300, 12400, 4],   // ось A
-      ],
       cols: colsAt('2H 3H 4H 2G 2F 3E 2D 3D 4D 2C 3C 4C 2A 3A 4A'),
       beams: [beamY('H',2,4), beamY('D',2,4), beamY('C',2,4), beamY('A',2,4), beamX(2,'H','A'), beamX(3,'H','A'), beamX(4,'H','A')]},
-  1: {cols: [...colsAt('2H 3H 4H 1G 2G 1F 2F 1E 2E 2D 3D 3C 1A'),
-             [11050, 6300, 11450, 6700], [11050, 8700, 11450, 9100], [4000, 8700, 4400, 9100], [6650, 11600, 7050, 12000]],   // приставные стойки Стп1
+  // Старые стены снесены целиком (окт. 2026) — приставные стойки Стп1 не нужны. Вместо них колонны в узлах 2A 3A 4A 4C 4D 2C,
+  // как на 2-м этаже (Км8). Предположение до корректировки раздела C проектировщиком.
+  1: {cols: colsAt('2H 3H 4H 1G 2G 1F 2F 1E 2E 2D 3D 3C 1A 2A 3A 4A 4D 4C 2C'),
       beams: [beamY('H',2,4), beamY('G',1,2), beamY('E',1,2), beamY('D',2,4), beamY('C',1,4), beamY('A',1,4),
               beamX(1,'G','A'), beamX(2,'H','A'), beamX(3,'H','A'), beamX(4,'H','A')]},
   2: {cols: colsAt('2H 3H 4H 1F 2F 1E 2D 3D 4D 2C 3C 4C 1A 2A 3A 4A'),
@@ -468,6 +463,8 @@ const FRAMES = {
               beamX(1,'F','A'), beamX(2,'H','A'), beamX(3,'H','A'), beamX(4,'H','A')]},
 };
 const FRAME = FRAMES[FLOOR];
+// Котлован (состояние на октябрь 2026): прямоугольник по наружному контуру лент + 300, стенки вертикальные
+const PIT = {x0:-800, y0:-1100, x1:12750, y1:13300, bottom:-4.08};
 function floor1(){
 // Стены: [x0,y0,x1,y1,тип]  b=несущая  e=наружная  n=перегородка  low=низкая
 const WALLS = [
@@ -1143,13 +1140,10 @@ function renderSel(){
   $('#gSel').innerHTML = s;
 }
 
-const GRIP = {1:'#4f9d69', 2:'#d9b13b', 3:'#e07b39', 4:'#b8412c'};   // очерёдность захваток подводки
 function renderFrame(){
   const on = ui.layers.bearing, R = ([x0,y0,x1,y1], f, ex) => `<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="${f}" ${ex}/>`;
-  const T = ([x0,y0,x1,y1], g) => `<text x="${(x0+x1)/2}" y="${(y0+y1)/2}" font-size="220" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#fff" stroke="#3a2a1a" stroke-width="30" paint-order="stroke">${g}</text>`;
-  const under = on ? (FRAME.under || []).map(([x0,y0,x1,y1,g]) => R([x0,y0,x1,y1], GRIP[g], 'stroke="#3a2a1a" stroke-width="1" vector-effect="non-scaling-stroke"') + T([x0,y0,x1,y1], g)).join('') : '';
   $('#gFrame').innerHTML = on ? (FRAME.found || []).map(f => R(f, 'rgba(96,104,118,.16)', 'stroke="#606876" stroke-width="1" stroke-dasharray="10 5" vector-effect="non-scaling-stroke"')).join('') + FRAME.beams.map(b => R(b, 'rgba(214,80,47,.18)', 'stroke="#d6502f" stroke-width="1" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"')).join('')
-    + FRAME.cols.map(c => R(c, '#d6502f', 'stroke="#7a2614" stroke-width="1" vector-effect="non-scaling-stroke"')).join('') + under : '';
+    + FRAME.cols.map(c => R(c, '#d6502f', 'stroke="#7a2614" stroke-width="1" vector-effect="non-scaling-stroke"')).join('') : '';
 }
 function renderAll(){
   renderFrame();
@@ -1829,7 +1823,7 @@ const stage = $('#stage'), host = $('#view3d');
 const OX = 5300, OY = 5000, H = FLOOR === 0 ? 3 : 2.8, FOV = 45;       // центр дома в начале мира, потолок 2,8 м
 const wx = x => (x - OX) / 1000, wz = y => (y - OY) / 1000, M = v => v / 1000;
 const SW = () => stage.clientWidth, SH = () => stage.clientHeight;
-const opt = {cut:2.8, furn:true, labels:true, night:false, frame:false, hour:10, mode:'orbit'};
+const opt = {cut:2.8, furn:true, labels:true, night:false, frame:false, pit:false, hour:10, mode:'orbit'};
 
 let inited = false, active = false, raf = 0, anim = null, fly = null;
 let renderer, labelRenderer, scene, camera, orbit, walkCtl, hemi, sun, ground, glassMat, wallMat, capMat, frameMat;
@@ -1873,7 +1867,7 @@ function init(){
   wallMat = mat('#f4f1eb', {roughness:.92}); capMat = mat('#34312d', {roughness:.9}); frameMat = mat('#5d6166', {roughness:.5, metalness:.4});
 
   archFloor = new THREE.Group(); archUp = new THREE.Group(); furnG = new THREE.Group(); labelG = new THREE.Group(); lampG = new THREE.Group();
-  scene.add(archFloor, archUp, furnG, labelG, lampG, frameG);
+  scene.add(archFloor, archUp, furnG, labelG, lampG, frameG, pitG);
 
   const cv = renderer.domElement; let downAt = null, look = null;
   cv.addEventListener('pointerdown', e => {
@@ -2648,8 +2642,23 @@ const frameXMat = new THREE.MeshBasicMaterial({color:'#d6502f', transparent:true
 const foundXMat = new THREE.MeshBasicMaterial({color:'#5d6676', transparent:true, opacity:.55, depthTest:false});
 const xray = (c, o) => new THREE.MeshBasicMaterial({color:c, transparent:true, opacity:o, depthTest:false});
 const prepXMat = xray('#a9adb3', .5), gravelXMat = xray('#8a7a62', .5);
-const underXMat = {1:xray('#4f9d69', .8), 2:xray('#d9b13b', .8), 3:xray('#e07b39', .8), 4:xray('#b8412c', .8)};
-const frameG = new THREE.Group();
+const frameG = new THREE.Group(), pitG = new THREE.Group();
+// Котлован вместо подвала: дно, земляные стенки до рельефа (ступенями по 1 м), внутри — ленты фундамента
+function buildPit(){
+  clearGroup(pitG);
+  const lvl0 = -3.3, earth = mat('#b58a5a', {roughness:1}), bottom = mat('#d8c39b', {roughness:1}), {x0, y0, x1, y1} = PIT, t = 300, b = PIT.bottom - lvl0;
+  pitG.add(box(M(x1-x0), .02, M(y1-y0), bottom, wx((x0+x1)/2), b - .02, wz((y0+y1)/2)));
+  const wall = (a0, a1, fixed, alongX) => { for (let a = a0; a < a1; a += 1000){ const e = Math.min(a + 1000, a1), yc = alongX ? fixed : (a + e)/2, top = grade(yc) - lvl0;
+    pitG.add(alongX ? box(M(e-a), top - b, M(t), earth, wx((a+e)/2), b, wz(fixed)) : box(M(t), top - b, M(e-a), earth, wx(fixed), b, wz((a+e)/2))); } };
+  wall(x0 - t, x1 + t, y0 - t/2, true); wall(x0 - t, x1 + t, y1 + t/2, true); wall(y0, y1, x0 - t/2, false); wall(y0, y1, x1 + t/2, false);
+}
+function applyPit(){
+  if (!inited) return;
+  const on = opt.pit && FLOOR === 0;
+  if (on && !pitG.children.length) buildPit();
+  pitG.visible = on; archUp.visible = archFloor.visible = lampG.visible = !on; furnG.visible = !on && opt.furn;
+  if (on && !opt.frame){ opt.frame = true; frameG.visible = true; document.querySelector('[data-t="frame"]')?.classList.add('on'); }
+}
 const fenceMat = new THREE.MeshStandardMaterial({color:'#3f3d3a', roughness:.6, metalness:.3}), railMat = new THREE.MeshStandardMaterial({color:'#2f2d2a', roughness:.4, metalness:.6});
 function railing([x0, y0, x1, y1], zb, glass){
   const hz = x1 - x0 >= y1 - y0, L = M(hz ? x1 - x0 : y1 - y0), cx = wx((x0+x1)/2), cz = wz((y0+y1)/2);
@@ -2744,8 +2753,6 @@ function buildArch(){
                box(w + .2, .08, d + .2, prepXMat, cx, zb - .08 - lvl0, cz),       // бетонная подготовка C7,5, 80 мм
                box(w + .2, .1, d + .2, gravelXMat, cx, zb - .18 - lvl0, cz));     // щебень, втрамбованный в грунт, 100 мм
   });
-  (FRAME.under || []).forEach(([x0, y0, x1, y1, g]) => [[-2.1, -1.6], [-2.6, -2.1], [-3.1, -2.6], [-3.5, -3.1]].forEach(([zb, zt]) =>
-    frameG.add(box(M(x1-x0) - .03, zt - zb - .03, M(y1-y0) - .03, underXMat[g], wx((x0+x1)/2), zb - lvl0, wz((y0+y1)/2)))));
   FRAME.beams.forEach(([x0, y0, x1, y1]) => frameG.add(box(M(x1-x0) + .002, .4, M(y1-y0) + .002, beamXMat, wx((x0+x1)/2), H - .4, wz((y0+y1)/2))));
   frameG.traverse(o => { o.renderOrder = o.material === foundXMat || o.material === prepXMat || o.material === gravelXMat ? 9 : 10; o.castShadow = o.receiveShadow = false; });   // фундамент под колоннами
   frameG.visible = opt.frame;
@@ -3050,7 +3057,9 @@ function bindUI(){
     if (k === 'labels') showLabels(opt.labels && opt.mode === 'orbit' && !anim);
     if (k === 'night') applyLight();
     if (k === 'frame') frameG.visible = opt.frame;
+    if (k === 'pit') applyPit();
   });
+  if (FLOOR !== 0) $('#tPit').style.display = 'none';
   $('#sun').oninput = e => { opt.hour = +e.target.value; applyLight(); };
 }
 
